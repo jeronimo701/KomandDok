@@ -1,0 +1,6 @@
+Flask>=3.1,<4
+reportlab>=4.2,<5
+pypdf>=6,<7
+Pillow>=11,<13
+pypdfium2>=4.30,<6
+pystray>=0.19.5,<1

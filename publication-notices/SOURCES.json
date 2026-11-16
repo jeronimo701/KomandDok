@@ -1,0 +1,187 @@
+{
+  "snapshot": "2026-10-22",
+  "python": "3.13.12",
+  "packager": "PyInstaller 6.19.0",
+  "components": [
+    {
+      "distribution": "Flask",
+      "version": "3.1.0",
+      "homepage": null,
+      "project_urls": [
+        "Changes, https://flask.palletsprojects.com/changes/",
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://flask.palletsprojects.com/",
+        "Donate, https://palletsprojects.com/donate",
+        "Source, https://github.com/pallets/flask/"
+      ]
+    },
+    {
+      "distribution": "Werkzeug",
+      "version": "3.1.8",
+      "homepage": null,
+      "project_urls": [
+        "Changes, https://werkzeug.palletsprojects.com/page/changes/",
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://werkzeug.palletsprojects.com/",
+        "Donate, https://palletsprojects.com/donate",
+        "Source, https://github.com/pallets/werkzeug/"
+      ]
+    },
+    {
+      "distribution": "Jinja2",
+      "version": "3.1.6",
+      "homepage": null,
+      "project_urls": [
+        "Changes, https://jinja.palletsprojects.com/changes/",
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://jinja.palletsprojects.com/",
+        "Donate, https://palletsprojects.com/donate",
+        "Source, https://github.com/pallets/jinja/"
+      ]
+    },
+    {
+      "distribution": "MarkupSafe",
+      "version": "3.0.3",
+      "homepage": null,
+      "project_urls": [
+        "Donate, https://palletsprojects.com/donate",
+        "Documentation, https://markupsafe.palletsprojects.com/",
+        "Changes, https://markupsafe.palletsprojects.com/page/changes/",
+        "Source, https://github.com/pallets/markupsafe/",
+        "Chat, https://discord.gg/pallets"
+      ]
+    },
+    {
+      "distribution": "itsdangerous",
+      "version": "2.2.0",
+      "homepage": null,
+      "project_urls": [
+        "Changes, https://itsdangerous.palletsprojects.com/changes/",
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://itsdangerous.palletsprojects.com/",
+        "Donate, https://palletsprojects.com/donate",
+        "Source, https://github.com/pallets/itsdangerous/"
+      ]
+    },
+    {
+      "distribution": "click",
+      "version": "8.3.3",
+      "homepage": null,
+      "project_urls": [
+        "Changes, https://click.palletsprojects.com/page/changes/",
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://click.palletsprojects.com/",
+        "Donate, https://palletsprojects.com/donate",
+        "Source, https://github.com/pallets/click/"
+      ]
+    },
+    {
+      "distribution": "blinker",
+      "version": "1.9.0",
+      "homepage": null,
+      "project_urls": [
+        "Chat, https://discord.gg/pallets",
+        "Documentation, https://blinker.readthedocs.io",
+        "Source, https://github.com/pallets-eco/blinker/"
+      ]
+    },
+    {
+      "distribution": "reportlab",
+      "version": "4.5.1",
+      "homepage": "https://www.reportlab.com/",
+      "project_urls": []
+    },
+    {
+      "distribution": "pypdf",
+      "version": "6.10.2",
+      "homepage": null,
+      "project_urls": [
+        "Bug Reports, https://github.com/py-pdf/pypdf/issues",
+        "Changelog, https://pypdf.readthedocs.io/en/latest/meta/CHANGELOG.html",
+        "Documentation, https://pypdf.readthedocs.io/en/latest/",
+        "Source, https://github.com/py-pdf/pypdf"
+      ]
+    },
+    {
+      "distribution": "pillow",
+      "version": "11.0.0",
+      "homepage": null,
+      "project_urls": [
+        "Changelog, https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst",
+        "Documentation, https://pillow.readthedocs.io",
+        "Funding, https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
+        "Homepage, https://python-pillow.org",
+        "Mastodon, https://fosstodon.org/@pillow",
+        "Release notes, https://pillow.readthedocs.io/en/stable/releasenotes/index.html",
+        "Source, https://github.com/python-pillow/Pillow"
+      ]
+    },
+    {
+      "distribution": "pypdfium2",
+      "version": "5.7.0",
+      "homepage": "https://github.com/pypdfium2-team/pypdfium2",
+      "project_urls": [
+        "Source, https://github.com/pypdfium2-team/pypdfium2",
+        "Tracker, https://github.com/pypdfium2-team/pypdfium2/issues",
+        "Documentation, https://pypdfium2.readthedocs.io",
+        "Changelog, https://pypdfium2.readthedocs.io/en/stable/changelog.html"
+      ]
+    },
+    {
+      "distribution": "pystray",
+      "version": "0.19.5",
+      "homepage": "https://github.com/moses-palmer/pystray",
+      "project_urls": []
+    },
+    {
+      "distribution": "cryptography",
+      "version": "46.0.7",
+      "homepage": null,
+      "project_urls": [
+        "homepage, https://github.com/pyca/cryptography",
+        "documentation, https://cryptography.io/",
+        "source, https://github.com/pyca/cryptography/",
+        "issues, https://github.com/pyca/cryptography/issues",
+        "changelog, https://cryptography.io/en/latest/changelog/"
+      ]
+    },
+    {
+      "distribution": "cffi",
+      "version": "2.0.0",
+      "homepage": null,
+      "project_urls": [
+        "Documentation, https://cffi.readthedocs.io/",
+        "Changelog, https://cffi.readthedocs.io/en/latest/whatsnew.html",
+        "Downloads, https://github.com/python-cffi/cffi/releases",
+        "Contact, https://groups.google.com/forum/#!forum/python-cffi",
+        "Source Code, https://github.com/python-cffi/cffi",
+        "Issue Tracker, https://github.com/python-cffi/cffi/issues"
+      ]
+    },
+    {
+      "distribution": "pycparser",
+      "version": "3.0",
+      "homepage": null,
+      "project_urls": [
+        "Homepage, https://github.com/eliben/pycparser"
+      ]
+    },
+    {
+      "distribution": "six",
+      "version": "1.17.0",
+      "homepage": "https://github.com/benjaminp/six",
+      "project_urls": []
+    },
+    {
+      "distribution": "charset-normalizer",
+      "version": "3.4.7",
+      "homepage": null,
+      "project_urls": [
+        "Changelog, https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md",
+        "Documentation, https://charset-normalizer.readthedocs.io/",
+        "Code, https://github.com/jawah/charset_normalizer",
+        "Issue tracker, https://github.com/jawah/charset_normalizer/issues"
+      ]
+    }
+  ]
+}
