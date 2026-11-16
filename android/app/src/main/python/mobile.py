@@ -7,12 +7,18 @@ import fonts   # Extract the packaged TrueType files before ReportLab opens them
 from pypdf import PdfReader, PdfWriter
 from app import create_app
 
+APP = ROOT = None
+
 def start(root):
     global APP, ROOT
-    ROOT = Path(root).resolve()
-    APP = create_app(ROOT / 'Командировки', ROOT / 'Печать')
+    requested = Path(root).resolve()
+    if ROOT == requested:
+        return
+    APP = create_app(requested / 'Командировки', requested / 'Печать')
+    APP.config['RECEIPT_DPI'] = 200
+    ROOT = requested
 
-def dispatch(method, route, payload='', uploads='[]'):
+def dispatch(method, route, payload='', uploads='[]', observer=None):
     if method not in {'GET','POST','PUT','DELETE'} or not re.fullmatch(
         r'/api/(?:defaults|suggestions|estimate|trips(?:/[a-f0-9]{32}(?:/(?:rename|copy|generate|pack|upload|signature|signature-layout/(?:request|report|memo)|preview/(?:request|report|memo|details)))?)?|trash(?:/[a-f0-9]{32}/restore)?)',
         route,
@@ -28,6 +34,8 @@ def dispatch(method, route, payload='', uploads='[]'):
             ]}
         elif payload:
             options.update(data=payload, content_type='application/json')
+        if observer is not None and method=='POST' and route.endswith('/pack'):
+            options['environ_overrides']={'j701.progress':observer.update}
         # The native bridge is the only caller, and there is no HTTP listener.
         with APP.test_client() as client:
             response = client.open(route, method=method, headers={'X-Trip-Token': APP.config['MOBILE_TOKEN']}, **options)

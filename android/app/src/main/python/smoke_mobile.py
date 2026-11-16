@@ -6,8 +6,9 @@ from PIL import Image, ImageDraw
 from pypdf import PdfReader
 import mobile
 
-def api(method, route, payload=None, uploads=None):
-    result=json.loads(mobile.dispatch(method,route,json.dumps(payload) if payload is not None else '',json.dumps(uploads or [])))
+def api(method, route, payload=None, uploads=None, observer=None):
+    result=json.loads(mobile.dispatch(method,route,json.dumps(payload) if payload is not None else '',
+                                      json.dumps(uploads or []),observer))
     assert result['ok'],result
     return result['data']
 
@@ -32,7 +33,20 @@ def check(root):
     report_path=mobile.attachment(key,report['path'])
     extracted=PdfReader(report_path).pages[0].extract_text()
     assert 'АВАНСОВЫЙ ОТЧЕТ' in extracted and '2 325,50' in extracted
-    pack=api('POST',route+'/pack',{'revision':1,'files':[{'path':f['path'],'copies':2 if f['name'].startswith('02_') else 1} for f in generated['files']]})
+    class PackObserver:
+        def __init__(self):
+            self.percentages=[]
+
+        def update(self, percent, message):
+            assert message
+            self.percentages.append(percent)
+            if percent==100:
+                assert list(Path(card['print_folder']).glob('Комплект_*.pdf'))
+
+    observer=PackObserver()
+    pack=api('POST',route+'/pack',{'revision':1,'files':[{'path':f['path'],'copies':2 if f['name'].startswith('02_') else 1} for f in generated['files']]},
+             observer=observer)
+    assert observer.percentages==[2,7,28,49,70,95,100],observer.percentages
     source=mobile.attachment(key,pack['path'])
     assert pack['pages']==5 and len(PdfReader(source).pages)==5
     mobile.print_ranges(source,str(root/'printed.pdf'),'[[1,2]]')
@@ -64,7 +78,7 @@ def check(root):
     try: mobile.attachment(key,'../../Командировки/'+key+'.json')
     except ValueError: pass
     else: raise AssertionError('attachment outside its project accepted')
-    return 'OK: estimates, receipts, Cyrillic PDFs, pack order, print subset, signature picker bridge, dates and restore'
+    return 'OK: estimates, receipts, Cyrillic PDFs, pack order and progress, print subset, signature picker bridge, dates and restore'
 
 if __name__=='__main__':
     with tempfile.TemporaryDirectory() as temp:

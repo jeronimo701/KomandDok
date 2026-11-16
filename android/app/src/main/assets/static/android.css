@@ -29,3 +29,9 @@ button,input,select,textarea{touch-action:manipulation}
     .preview-header button,.preview-header a{padding:7px 8px;font-size:12px}
     #preview-frame{height:calc(100% - 150px)}
 }
+.busy-spinner{display:flex;align-items:center;gap:14px}
+#pack-progress-box{width:min(250px,62vw);display:grid;gap:10px;text-align:left}
+.pack-progress-title{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#pack-progress-percent{font-variant-numeric:tabular-nums;color:#9bcbff}
+#pack-progress{display:block;width:100%;height:10px;accent-color:#4e9fff}
+#pack-progress-status{color:var(--muted);font-size:13px}

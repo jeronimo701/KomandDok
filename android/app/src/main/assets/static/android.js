@@ -1,6 +1,7 @@
 /* Android-only integration for the shared J701 interface. */
 const pending = new Map();
 let nextCall = 0;
+let activePackCall = null;
 window.J701Reply = (id, raw) => {
     const done = pending.get(id);
     if (!done) return;
@@ -18,6 +19,33 @@ function nativeCall(method, ...args) {
         try { J701Native[method](id, ...args); }
         catch (error) { pending.delete(id); reject(error); }
     });
+}
+
+function setPackProgress(percent,message) {
+    $('#pack-progress').value=percent;
+    $('#pack-progress-percent').textContent=percent+'%';
+    $('#pack-progress-status').textContent=message;
+}
+
+window.J701PackProgress = (id,percent,message) => {
+    if (id===activePackCall) setPackProgress(percent,message);
+};
+
+async function androidRequest(path,{method='GET',body}={}) {
+    const payload=body ? JSON.stringify(body) : '';
+    if (method!=='POST' || !path.endsWith('/pack')) return nativeCall('request',method,path,payload);
+
+    $('#busy-spinner').hidden=true;
+    $('#pack-progress-box').hidden=false;
+    setPackProgress(0,'Проверяем выбранные файлы');
+    activePackCall=nextCall+1;
+    try {
+        return await nativeCall('request',method,path,payload);
+    } finally {
+        activePackCall=null;
+        $('#pack-progress-box').hidden=true;
+        $('#busy-spinner').hidden=false;
+    }
 }
 function androidDocument(mode, path) {
     J701Native.document(mode, current.id, path);

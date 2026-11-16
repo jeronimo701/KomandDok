@@ -148,28 +148,64 @@ def form(path, trip, kind, signature_path=None, placement=None, editing=False):
     doc.build(flow)
     return mark.anchor if mark else None
 
-def image_pdf(path):
+def receipt_source(original, frame, path, dpi, printable):
+    """Prepare one printable image, avoiding full-size RGB buffers on Android."""
+    rotation = frame.getexif().get(274, 1)
+    swap_axes = rotation in (5, 6, 7, 8)
+    width, height = frame.size[::-1] if swap_axes else frame.size
+    limit = tuple(round(side*dpi/72) for side in printable)
+    # A JPEG already small enough can go straight into the PDF without re-encoding.
+    if original.format=='JPEG' and frame.mode in ('RGB','L'):
+        if rotation==1 and width<=limit[0] and height<=limit[1]:
+            return str(path), width, height
+        original.draft(frame.mode, limit[::-1] if swap_axes else limit)
+
+    image = ImageOps.exif_transpose(frame)
+    image.thumbnail(limit, Image.Resampling.LANCZOS)
+    if 'A' in image.getbands() or 'transparency' in image.info:
+        alpha = image.convert('RGBA')
+        image = Image.new('RGB', alpha.size, 'white')
+        image.paste(alpha, mask=alpha.getchannel('A'))
+    elif image.mode not in ('RGB','L'):
+        image = image.convert('RGB')
+
+    # Keep small images lossless. JPEG is faster to embed and render for camera photos.
+    source = image
+    if max(image.size)>650:
+        source = BytesIO()
+        image.save(source, format='JPEG', quality=88, subsampling=0)
+        source.seek(0)
+    return ImageReader(source), image.width, image.height
+
+def image_pdf(path, dpi=None):
     """Place each original image/frame on A4; preserve aspect ratio and orientation."""
     from reportlab.pdfgen.canvas import Canvas
-    from reportlab.lib.utils import ImageReader
     out=BytesIO()
     canvas=Canvas(out,pagesize=A4)
+    w,h=A4
+    printable=(w-20*mm,h-20*mm)
     with Image.open(path) as original:
         for frame in ImageSequence.Iterator(original):
-            im=ImageOps.exif_transpose(frame.copy()).convert('RGBA')
-            white=Image.new('RGB',im.size,'white'); white.paste(im,mask=im.getchannel('A'))
-            w,h=A4; ratio=min((w-20*mm)/white.width,(h-20*mm)/white.height)
-            iw,ih=white.width*ratio,white.height*ratio
-            canvas.drawImage(ImageReader(white),(w-iw)/2,(h-ih)/2,width=iw,height=ih)
+            if dpi:
+                source,width,height=receipt_source(original,frame,path,dpi,printable)
+            else:
+                im=ImageOps.exif_transpose(frame.copy()).convert('RGBA')
+                white=Image.new('RGB',im.size,'white'); white.paste(im,mask=im.getchannel('A'))
+                source,width,height=ImageReader(white),white.width,white.height
+            ratio=min(printable[0]/width,printable[1]/height)
+            iw,ih=width*ratio,height*ratio
+            canvas.drawImage(source,(w-iw)/2,(h-ih)/2,width=iw,height=ih)
             canvas.showPage()
     canvas.save(); out.seek(0)
     return out
 
-def combine(entries, destination):
+def combine(entries, destination, progress=None, receipt_dpi=None):
     writer=PdfWriter()
-    for path,copies in entries:
+    for index,(path,copies) in enumerate(entries):
+        if progress:
+            progress(7+85*index//len(entries),f'Добавляем файл {index+1} из {len(entries)}')
         try:
-            reader=PdfReader(str(path) if path.suffix.lower()=='.pdf' else image_pdf(path))
+            reader=PdfReader(str(path) if path.suffix.lower()=='.pdf' else image_pdf(path,receipt_dpi))
             if reader.is_encrypted and not reader.decrypt(''):
                 raise ValueError('PDF защищен паролем')
             if not reader.pages: raise ValueError('В документе нет страниц')
@@ -178,5 +214,7 @@ def combine(entries, destination):
         except Exception as exc:
             raise ValueError(f'Не удалось добавить «{path.name}»: {exc}') from exc
     if not writer.pages: raise ValueError('Выберите хотя бы один документ или чек для печати.')
+    if progress:
+        progress(95,'Сохраняем PDF')
     writer.write(str(destination))
     return len(writer.pages)

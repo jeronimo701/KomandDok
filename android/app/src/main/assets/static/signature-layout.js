@@ -8,7 +8,7 @@ let signatureLayout = null;
 let layoutDrag = null;
 
 function signaturePageURL(key, path, page) {
-    return '/page.png?id='+encodeURIComponent(key)+'&path='+encodeURIComponent(path)+'&n='+page;
+    return '/page.jpg?id='+encodeURIComponent(key)+'&path='+encodeURIComponent(path)+'&n='+page;
 }
 
 async function openSignatureLayout(kind) {

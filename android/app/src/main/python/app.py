@@ -528,6 +528,9 @@ def create_app(data_root=None, print_root=None):
 
     @app.post('/api/trips/<key>/pack')
     def pack(key):
+        progress=request.environ.get('j701.progress')
+        if progress:
+            progress(2,'Проверяем выбранные файлы')
         with lock:
             trip=load(key); data=request.get_json() or {}
             if data.get('revision')!=trip['revision']: raise ValueError('Сначала сохраните изменения и обновите документы.')
@@ -549,10 +552,13 @@ def create_app(data_root=None, print_root=None):
             destination=trip_dir(trip)/name
             temp=destination.with_suffix('.tmp')
             try:
-                pages=combine([(path,copies) for _,path,copies in ready],temp)
+                pages=combine([(path,copies) for _,path,copies in ready],temp,
+                              progress=progress,receipt_dpi=app.config.get('RECEIPT_DPI'))
                 temp.replace(destination)
             finally:
                 if temp.exists(): temp.unlink()
+            if progress:
+                progress(100,'PDF готов')
             return jsonify(path=name,pages=pages)
 
     app.trip_store=store

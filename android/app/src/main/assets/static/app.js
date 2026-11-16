@@ -18,7 +18,7 @@ const fmt=v=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFract
 function el(tag,props={},content){const e=document.createElement(tag);for(const [k,v]of Object.entries(props)){if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else e.setAttribute(k,v)}if(content)e.append(...content);return e}
 function notice(text,error=false){const node=$('#message');node.textContent=text;node.classList.toggle('error',error);node.hidden=false;if(error)node.scrollIntoView({behavior:'smooth',block:'nearest'})}
 function hidePack(){const n=$('#pack-result');n.hidden=true;n.replaceChildren()}
-async function api(path,options={}){return nativeCall('request',options.method||'GET',path,options.body ? JSON.stringify(options.body) : '');}
+async function api(path,options={}){return androidRequest(path,options);}
 async function action(fn){if(busy||serverClosed)return;busy=true;$('#busy').hidden=false;$('#message').hidden=true;try{await fn()}catch(error){if(!serverClosed)notice(error.message,true)}finally{busy=false;$('#busy').hidden=true}}
 function markDirty(){dirty=true;$('#save-state').textContent='Есть изменения';hidePack();scheduleEstimate()}
 function setTitle(){const city=form.elements.city.value.trim();$('#title').textContent=current?.name||city||'Новая командировка';$('#subtitle').textContent=current?'Карточка командировки · данные для всех документов':'Заполните данные один раз для всех документов.'}

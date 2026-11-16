@@ -1,14 +1,17 @@
 package ru.j701.trips;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
@@ -41,7 +44,7 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
     private static final String HOME = "https://" + HOST + "/";
-    private static final int PICK = 901, EXPORT = 902;
+    private static final int PICK = 901, EXPORT = 902, NOTIFY = 903;
     private static final int FILE_LIMIT = 50 * 1024 * 1024;
     private static final long TOTAL_LIMIT = 120L * 1024 * 1024;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -75,7 +78,7 @@ public final class MainActivity extends Activity {
                 if (!local(uri)) return failed(403,"Недоступно");
                 String path=uri.getPath();
                 try {
-                    if ("/preview".equals(path) || "/page.png".equals(path)) return preview(uri);
+                    if ("/preview".equals(path) || "/page.jpg".equals(path)) return preview(uri);
                     if ("/".equals(path) || "/index.html".equals(path)) return asset("index.html","text/html");
                     if (path != null && path.matches("/static/[a-zA-Z0-9_.-]+")) {
                         String mime=path.endsWith(".js")?"application/javascript":path.endsWith(".css")?"text/css":path.endsWith(".gif")?"image/gif":"image/x-icon";
@@ -124,7 +127,7 @@ public final class MainActivity extends Activity {
             if("/preview".equals(uri.getPath())) {
                 StringBuilder html=new StringBuilder("<!doctype html><html lang='ru'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{background:#333b48;margin:0}img{display:block;width:min(100%,800px);height:auto;margin:0 auto 10px;background:white;min-height:120px}</style>");
                 for(int i=0;i<pdf.getPageCount();i++) html.append("<img loading='lazy' alt='Страница ").append(i+1)
-                    .append("' src='/page.png?id=").append(Uri.encode(key)).append("&amp;path=").append(Uri.encode(relative)).append("&amp;n=").append(i).append("'>");
+                    .append("' src='/page.jpg?id=").append(Uri.encode(key)).append("&amp;path=").append(Uri.encode(relative)).append("&amp;n=").append(i).append("'>");
                 return response("text/html",html.toString().getBytes(StandardCharsets.UTF_8));
             }
             int index=Integer.parseInt(uri.getQueryParameter("n"));
@@ -135,8 +138,8 @@ public final class MainActivity extends Activity {
                     Bitmap image=Bitmap.createBitmap(Math.max(1,(int)(page.getWidth()*scale)),Math.max(1,(int)(page.getHeight()*scale)),Bitmap.Config.ARGB_8888);
                     try {
                         image.eraseColor(Color.WHITE); page.render(image,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-                        ByteArrayOutputStream out=new ByteArrayOutputStream(); image.compress(Bitmap.CompressFormat.PNG,100,out);
-                        return response("image/png",out.toByteArray());
+                        ByteArrayOutputStream out=new ByteArrayOutputStream(); image.compress(Bitmap.CompressFormat.JPEG,89,out);
+                        return response("image/jpeg",out.toByteArray());
                     } finally {image.recycle();}
                 }
             }
@@ -151,9 +154,65 @@ public final class MainActivity extends Activity {
         catch(Exception ignored){return "{\"ok\":false}";}
     }
     private void toast(String text) { runOnUiThread(() -> Toast.makeText(this,text,Toast.LENGTH_LONG).show()); }
+
+    private void pack(int call, String path, String body) {
+        PdfPackService.Job job = new PdfPackService.Job() {
+            @Override public JSONObject run(PdfPackService.PackProgress progress) {
+                try {
+                    return new JSONObject(engine.callAttr("dispatch","POST",path,body,"[]",progress).toString());
+                } catch (Exception error) {
+                    JSONObject data = new JSONObject(Collections.singletonMap("error",
+                        Objects.toString(error.getMessage(),"Не удалось собрать PDF.")));
+                    Map<String,Object> response = new HashMap<>();
+                    response.put("ok",false);
+                    response.put("data",data);
+                    return new JSONObject(response);
+                }
+            }
+            @Override public void update(int percent, String message) {
+                runOnUiThread(() -> {
+                    if (!isDestroyed()) web.evaluateJavascript(
+                        "J701PackProgress("+call+","+percent+","+JSONObject.quote(message)+")",null);
+                });
+            }
+            @Override public void reply(JSONObject result) {
+                deliver(call, result.toString());
+            }
+        };
+        try {
+            if (PdfPackService.launch(this,job)) {
+                requestNotificationPermission();
+            } else {
+                worker.execute(() -> job.reply(job.run(new PdfPackService.PackProgress(job::update))));
+            }
+        } catch (IllegalStateException error) {
+            deliver(call, failure(error));
+        }
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED) return;
+        var preferences = getPreferences(MODE_PRIVATE);
+        if (!preferences.getBoolean("asked_for_pdf_notifications",false)) {
+            preferences.edit().putBoolean("asked_for_pdf_notifications",true).apply();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},NOTIFY);
+        }
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode,permissions,results);
+        if (requestCode==NOTIFY && results.length>0 && results[0]==PackageManager.PERMISSION_GRANTED) {
+            PdfPackService.postLatest(this);
+        }
+    }
+
     private final class Bridge {
         @JavascriptInterface public void exit() { runOnUiThread(() -> finish()); }
         @JavascriptInterface public void request(int call,String method,String path,String body) {
+            if ("POST".equals(method) && path.matches("/api/trips/[a-f0-9]{32}/pack")) {
+                runOnUiThread(() -> pack(call,path,body));
+                return;
+            }
             worker.execute(() -> {
                 try {deliver(call,engine.callAttr("dispatch",method,path,body).toString());}
                 catch(Exception error) {deliver(call,failure(error));}

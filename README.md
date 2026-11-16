@@ -2,7 +2,7 @@
 
 **Карточка поездки, авансовый отчёт и чеки в одном месте.** Заполните сведения о командировке один раз, внесите фактические расходы и соберите документы с приложениями в один PDF для печати или отправки.
 
-[Скачать для Windows](https://github.com/jeronimo701/KomandDok/releases/download/snapshot-2026-11-16/KomandDok-Portable.zip) · [Скачать APK для Android](https://github.com/jeronimo701/KomandDok/releases/download/snapshot-2026-11-16/KomandDok-Android.apk) · [Страница релиза](https://github.com/jeronimo701/KomandDok/releases/tag/snapshot-2026-11-16)
+[Скачать для Windows](https://github.com/jeronimo701/KomandDok/releases/download/snapshot-2026-11-16/KomandDok-Portable.zip) · [Скачать APK для Android](https://github.com/jeronimo701/KomandDok/releases/download/android-v1.4/KomandDok-Android.apk) · [Что нового в Android 1.4](https://github.com/jeronimo701/KomandDok/releases/tag/android-v1.4) · [Релиз Windows](https://github.com/jeronimo701/KomandDok/releases/tag/snapshot-2026-11-16)
 
 ## Что умеет
 
@@ -33,7 +33,7 @@
 | Платформа | Порядок запуска |
 |---|---|
 | **Windows x64** | Распакуйте ZIP в доступную для записи папку и запустите **J701.exe**. Приложение откроется в браузере и останется в трее. Python и Microsoft Office не нужны. |
-| **Android 7.0+** | Установите **KomandDok-Android.apk** на arm64-v8a или x86_64. APK версии 1.3.1 подписан отладочным ключом и распространяется вне Google Play. |
+| **Android 7.0+** | Установите **KomandDok-Android.apk** на arm64-v8a или x86_64. APK версии 1.4 подписан отладочным ключом и распространяется вне Google Play. |
 
 Для обновления Windows остановите приложение и замените J701.exe, сохранив папки «Данные» и «Печать». При несовместимой подписи Android не удаляйте старую установку без сохранения нужных PDF: удаление приложения удаляет его локальные карточки.
 

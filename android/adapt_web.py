@@ -19,16 +19,21 @@ s=s.replace('● Локально на этом компьютере','● Ло�
 s=s.replace('Если диалог печати не появился, откройте PDF и нажмите Ctrl+P или значок принтера.','Можно распечатать PDF, сохранить его в файлы или отправить.')
 s=s.replace('<button type="button" id="preview-close">','<button type="button" id="preview-share">Поделиться</button><button type="button" id="preview-export">Сохранить PDF</button><button type="button" id="preview-close">')
 s=s.replace('После сохранения появится отдельная папка командировки.','Чеки и документы хранятся в карточке поездки.')
+s=s.replace('<div class="spinner"></div><span>Подготавливаю…</span>',
+    '<div id="busy-spinner" class="busy-spinner"><div class="spinner"></div><span>Подготавливаю…</span></div>'
+    '<div id="pack-progress-box" hidden><div class="pack-progress-title"><strong>Подготовка PDF</strong>'
+    '<output id="pack-progress-percent">0%</output></div><progress id="pack-progress" max="100" value="0" '
+    'aria-label="Прогресс подготовки PDF"></progress><span id="pack-progress-status" role="status">Проверяем файлы</span></div>')
 p.write_text(s,encoding='utf-8')
 (r/'static/style.css').write_bytes((desktop/'static/style.css').read_bytes())
 layout=(desktop/'static/signature-layout.js').read_text(encoding='utf-8')
 layout=layout.replace("return '/api/trips/'+key+'/preview-page?path='+encodeURIComponent(path)+'&page='+page;",
-    "return '/page.png?id='+encodeURIComponent(key)+'&path='+encodeURIComponent(path)+'&n='+page;")
+    "return '/page.jpg?id='+encodeURIComponent(key)+'&path='+encodeURIComponent(path)+'&n='+page;")
 (r/'static/signature-layout.js').write_text(layout,encoding='utf-8')
 p=r/'static/app.js'
 s=(desktop/'static/app.js').read_text(encoding='utf-8-sig')
 start=s.index('async function api('); end=s.index('\n',start)
-s=s[:start]+"async function api(path,options={}){return nativeCall('request',options.method||'GET',path,options.body ? JSON.stringify(options.body) : '');}"+s[end:]
+s=s[:start]+"async function api(path,options={}){return androidRequest(path,options);}"+s[end:]
 s=s.replace('let savedSidebar=false;', 'let savedSidebar=true;').replace("savedSidebar=localStorage.getItem('J701.sidebarCollapsed')==='true'","savedSidebar=localStorage.getItem('J701.sidebarCollapsed')!=='false'")
 start=s.index("$('#signature-upload').onchange="); end=s.index('\n});',start)+len('\n});')
 s=s[:start]+s[end:]
